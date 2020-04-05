@@ -2,10 +2,15 @@ import axios from 'axios';
 import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
 import * as dotenv from 'dotenv';
+import { Dropbox } from 'dropbox';
 
 dotenv.config();
 
 const { TWITTER_USERNAME, TWITTER_PASSWORD } = process.env;
+const client = new Dropbox({
+  accessToken: process.env.DROPBOX_ACCESS_TOKEN,
+  fetch: require('isomorphic-fetch'),
+});
 
 async function maybeLoadCookies() {
   try {
@@ -38,17 +43,21 @@ export async function loginOnTwitter(page: puppeteer.Page) {
   return page;
 }
 
-export async function downloadUrl(url: string, path: string) {
-  const fileStream = fs.createWriteStream(path);
-  const response = await axios({ method: 'GET', responseType: 'stream', url });
+export async function downloadUrl(url: string) {
+  const res = await axios({ method: 'GET', responseType: 'arraybuffer', url });
+  return Buffer.from(res.data);
+}
 
-  response.data.pipe(fileStream);
-
-  return new Promise<string>((resolve, reject) => {
-    fileStream.on('finish', () => {
-      console.log(`saved ${url} in ${path}`);
-      resolve(path);
-    });
-    fileStream.on('error', reject);
-  });
+export async function uploadFileToDropbox(
+  filePromise: Promise<Buffer>,
+  dropboxPath: string
+) {
+  console.log('Uploading ', dropboxPath);
+  return client
+    .filesUpload({
+      path: dropboxPath,
+      contents: await filePromise,
+    })
+    .then(console.log)
+    .catch(console.error);
 }

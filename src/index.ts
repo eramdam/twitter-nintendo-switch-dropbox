@@ -3,78 +3,96 @@ import * as url from 'url';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 
-import { downloadUrl, loginOnTwitter } from './helpers';
-import { uploadFileToDropbox } from './dropbox';
+import { downloadUrl, loginOnTwitter, uploadFileToDropbox } from './helpers';
 
 dotenv.config();
 
 (async () => {
   const browser = await puppeteer.launch({ headless: true });
-  const page = await loginOnTwitter(await browser.newPage());
+  const page = await browser.newPage();
+  await loginOnTwitter(page);
 
   await page.click('[aria-label="Profile"]');
-  await page.waitForSelector('[data-testid="tweet"] time');
+  const profileJsonResponse = await page.waitForResponse((response) => {
+    return (
+      response.request().url().includes('2/timeline/profile') &&
+      response.request().method() === 'GET'
+    );
+  });
   console.log('Profile loaded');
 
-  const dateString = await page.evaluate(() => {
-    return (document.querySelector(
-      '[data-testid="tweet"] time'
-    ) as HTMLTimeElement).dateTime;
-  });
+  const profileJson: any = await profileJsonResponse.json();
+  const lastTweet = findLastTweetInProfile(profileJson);
 
-  await page.click('[data-testid="tweet"] time');
-  await page.waitForSelector('[aria-label="Back"]');
-  console.log('Last tweet loaded');
-
-  console.log('Extracting images');
-  const imagesUrls = await page.evaluate(() => {
-    return Array.from(
-      document.querySelectorAll(
-        '[data-testid="tweet"] + div img[src*="media/"]'
-      )
-    )
-      .map((node) => {
-        return (node.getAttribute('src') || '').replace('small', 'orig');
-      })
-      .filter((url) => url.includes('https://'))
-      .map((url) => {
-        const urlObject = new URL(url);
-        urlObject.searchParams.set('name', 'orig');
-        return urlObject.toString();
-      });
-  });
-
-  if (!imagesUrls.length) {
-    console.log('no images, nothing to do');
+  if (!lastTweet) {
+    console.log('No tweet found, exiting');
     process.exit(0);
   }
 
-  const dateObject = new Date(dateString);
+  const mediaObjects = extractMediaFilesFromTweetJson(lastTweet);
+  const tweetCreationDate = new Date(lastTweet.created_at);
 
-  const savedFilePaths = await Promise.all(
-    imagesUrls.map((imageUrl) => {
-      const filename =
-        url.parse(imageUrl).pathname.split('/media/')[1] +
-        '-' +
-        dateObject.getTime() +
-        '.jpg';
+  if (!mediaObjects) {
+    console.log('No media found on the last tweet, exiting');
+    process.exit(0);
+  }
 
-      const filepath = path.resolve('.', 'media', filename);
-
-      console.log('saving ', filename);
-      return downloadUrl(imageUrl, filepath);
-    })
-  );
-
+  console.log('mediaObjects', mediaObjects);
   await Promise.all(
-    savedFilePaths.map((f) => {
-      const month = dateObject.toLocaleString(undefined, { month: '2-digit' });
-      const day = dateObject.toLocaleString(undefined, { day: '2-digit' });
-      const year = dateObject.toLocaleString(undefined, { year: 'numeric' });
+    mediaObjects.map((mediaObject, index) => {
+      const month = tweetCreationDate.toLocaleString(undefined, {
+        month: '2-digit',
+      });
+      const day = tweetCreationDate.toLocaleString(undefined, {
+        day: '2-digit',
+      });
+      const year = tweetCreationDate.toLocaleString(undefined, {
+        year: 'numeric',
+      });
 
-      return uploadFileToDropbox(f, `/${year}-${month}-${day}`);
+      const fileBuffer = downloadUrl(mediaObject.url);
+      const ext = mediaObject.type === 'photo' ? 'jpg' : 'mp4';
+
+      return uploadFileToDropbox(
+        fileBuffer,
+        `/${year}-${month}-${day}/${lastTweet.id_str}-${index + 1}.${ext}`
+      );
     })
   );
 
   process.exit(0);
 })();
+
+function findLastTweetInProfile(profileJson: any) {
+  const tweets = Object.values(profileJson.globalObjects?.tweets) as any[];
+
+  return tweets.sort((a, b) => {
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  })[0];
+}
+
+function extractMediaFilesFromTweetJson(tweetJson: any) {
+  const hasPhotos = tweetJson.extended_entities.media[0].type === 'photo';
+
+  if (hasPhotos) {
+    return Array.from(tweetJson.entities.media).map((entity: any) => {
+      return {
+        url: entity.media_url_https + ':orig',
+        type: 'photo',
+      };
+    });
+  }
+
+  return Array.from(tweetJson.extended_entities.media)
+    .map((entity: any) => {
+      const variants: any[] = Array.from(entity.video_info.variants);
+      const bitRates = variants.map((variant) => Number(variant.bitrate || 0));
+      const maxBitrate = Math.max(...bitRates);
+
+      return variants.find((v) => maxBitrate === v.bitrate);
+    })
+    .map((v) => ({
+      url: v.url,
+      type: 'video',
+    }));
+}
