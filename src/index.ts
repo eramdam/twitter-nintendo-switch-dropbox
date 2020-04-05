@@ -74,9 +74,15 @@ dotenv.config();
 
 function findTweetsBeforeDateInProfile(profileJson: any, maxTimestamp: number) {
   const tweets = Object.values(profileJson.globalObjects?.tweets) as any[];
-  const sortedTweets = tweets.sort((a, b) => {
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
+  const sortedTweets = tweets
+    .filter((tweet) => {
+      return String(tweet.source).includes('Nintendo Switch Share');
+    })
+    .sort((a, b) => {
+      return (
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    });
 
   if (!maxTimestamp) {
     return [sortedTweets[0]];
