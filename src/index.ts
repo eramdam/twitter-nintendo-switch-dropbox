@@ -22,13 +22,25 @@ dotenv.config();
 
   await page.goto(`https://twitter.com/${process.env.TWITTER_USERNAME}`);
   const profileJsonResponse = await page.waitForResponse((response) => {
-    return (
+  let profileJsonResponse: puppeteer.Response = undefined;
+
+  page.on('response', (response) => {
+    if (
       response.request().url().includes('2/timeline/profile') &&
       response.request().method() === 'GET'
     );
+    ) {
+      profileJsonResponse = response;
+    }
   });
+
+  await page.goto(`https://twitter.com/${process.env.TWITTER_USERNAME}`, {
+    waitUntil: 'networkidle2',
+  });
+
   console.log('Profile loaded');
 
+  console.log('Got response', Boolean(profileJsonResponse));
   const profileJson: any = await profileJsonResponse.json();
   const lastTweets = findTweetsBeforeDateInProfile(profileJson, lastTweetDate);
 
