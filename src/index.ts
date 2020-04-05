@@ -17,7 +17,7 @@ dotenv.config();
   const page = await browser.newPage();
   await loginOnTwitter(page);
 
-  await page.click('[aria-label="Profile"]');
+  await page.goto(`https://twitter.com/${process.env.TWITTER_USERNAME}`);
   const profileJsonResponse = await page.waitForResponse((response) => {
     return (
       response.request().url().includes('2/timeline/profile') &&

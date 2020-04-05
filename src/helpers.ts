@@ -37,7 +37,7 @@ export async function loginOnTwitter(page: puppeteer.Page) {
   // login for realz
   await page.click('[data-testid="LoginForm_Login_Button"]');
   // go to our profile
-  await page.waitForSelector('[aria-label="Profile"]');
+  await page.waitForSelector('[data-testid]');
   console.log('Logged in');
 
   return page;
