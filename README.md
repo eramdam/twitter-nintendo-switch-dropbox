@@ -6,7 +6,7 @@ Like the (very verbose) repo name implies, this is a small Node script that scra
 
 You will need a couple of things:
 
-- A machine/server running NodeJS*
+- A machine/server running NodeJS (the more recent the better) 
   - I'll figure out how to setup this repo on [Glitch](https://glitch.com/) soon so it will be serverless™️ 😎
 - A Twitter account (duh), private or public
 - A Dropbox account with a personal app created, alongside an access token (if you don't know how to get this, [here's a tutorial](http://99rabbits.com/get-dropbox-access-token/))
@@ -26,6 +26,12 @@ Then, create a new file called `.env` at the root of the repo and fill it as fol
 TWITTER_USERNAME='your username'
 TWITTER_PASSWORD='your password'
 DROPBOX_ACCESS_TOKEN='your dropbox access token'
+```
+
+Finally, install the dependencies of the project:
+
+```
+npm i
 ```
 
 Now, while you *could* run the script right now, you'll want to run the following command. It will login once to your account and store the cookies locally so they can be re-used. This will prevent Twitter from telling you that a new device connected to your account every time the script runs!
