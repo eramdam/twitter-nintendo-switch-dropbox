@@ -4,7 +4,7 @@ import * as puppeteer from 'puppeteer';
 import {
   downloadUrl,
   getLastTweetDate,
-  loginOnTwitter,
+  maybeLoginOnTwitter,
   uploadFileToDropbox,
   writeLastTweetDate,
 } from './helpers';
@@ -15,14 +15,16 @@ dotenv.config();
   const lastTweetDate = await getLastTweetDate();
   const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
-  await page.setUserAgent(
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.0 Safari/537.36'
-  );
-  await loginOnTwitter(page);
 
+  // Shouldn't be necessary but I prefer to be paranoid.
+  const userAgent = await page.evaluate(() => navigator.userAgent);
+  await page.setUserAgent(userAgent.replace('HeadlessChrome', 'Chrome'));
+  await maybeLoginOnTwitter(page);
+
+  // Due to potential timing issues, we need to setup this listener _before_ we navigate.
   let profileJsonResponse: puppeteer.Response = undefined;
-
   page.on('response', (response) => {
+    // This should be the API request performed to get the tweets of our profile.
     if (
       response.request().url().includes('2/timeline/profile') &&
       response.request().method() === 'GET'
@@ -34,7 +36,6 @@ dotenv.config();
   await page.goto(`https://twitter.com/${process.env.TWITTER_USERNAME}`, {
     waitUntil: 'networkidle2',
   });
-
   console.log('Profile loaded');
 
   console.log('Got response', Boolean(profileJsonResponse));

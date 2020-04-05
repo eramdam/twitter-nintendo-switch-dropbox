@@ -22,7 +22,8 @@ async function maybeLoadCookies() {
   }
 }
 
-export async function loginOnTwitter(page: puppeteer.Page) {
+/** Logs in or directly open Twitter */
+export async function maybeLoginOnTwitter(page: puppeteer.Page) {
   const cookies = Array.from((await maybeLoadCookies()) || []);
   await page.setCookie(...(cookies as any));
 
@@ -52,6 +53,7 @@ export async function loginOnTwitter(page: puppeteer.Page) {
   return page;
 }
 
+/** Downloads a given URL and returns its content as a Buffer. */
 export async function downloadUrl(url: string) {
   const res = await axios({ method: 'GET', responseType: 'arraybuffer', url });
   return Buffer.from(res.data);
