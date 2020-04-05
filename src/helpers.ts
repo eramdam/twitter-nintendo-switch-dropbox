@@ -23,22 +23,31 @@ async function maybeLoadCookies() {
 }
 
 export async function loginOnTwitter(page: puppeteer.Page) {
-  await page.goto('https://twitter.com/login', { waitUntil: 'networkidle2' });
-  const cookies = await maybeLoadCookies();
-  await page.setCookie(...(Array.from(cookies || []) as any));
+  const cookies = Array.from((await maybeLoadCookies()) || []);
+  await page.setCookie(...(cookies as any));
 
-  // fill the credentials
-  console.log('logging in...');
-  await page.click('[name="session[username_or_email]"]');
-  await page.keyboard.type(TWITTER_USERNAME);
-  await page.click('[name="session[password]"]');
-  await page.keyboard.type(TWITTER_PASSWORD);
+  if (!cookies.length) {
+    await page.goto('https://twitter.com/login', { waitUntil: 'networkidle2' });
 
-  // login for realz
-  await page.click('[data-testid="LoginForm_Login_Button"]');
-  // go to our profile
+    // fill the credentials
+    console.log('logging in...');
+    await page.click('[name="session[username_or_email]"]');
+    await page.keyboard.type(TWITTER_USERNAME);
+    await page.click('[name="session[password]"]');
+    await page.keyboard.type(TWITTER_PASSWORD);
+
+    // login for realz
+    await page.click('[data-testid="LoginForm_Login_Button"]');
+    // go to our profile
+    await page.waitForSelector('[data-testid]');
+    console.log('Logged in');
+
+    return page;
+  }
+
+  await page.goto('https://twitter.com', { waitUntil: 'networkidle2' });
   await page.waitForSelector('[data-testid]');
-  console.log('Logged in');
+  console.log('Logged in already');
 
   return page;
 }
