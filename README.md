@@ -6,11 +6,10 @@ Like the (very verbose) repo name implies, this is a small Node script that scra
 
 You will need a couple of things:
 
-- A machine/server running NodeJS (the more recent the better) 
+- A machine/server running NodeJS (the more recent the better)
   - I'll figure out how to setup this repo on [Glitch](https://glitch.com/) soon so it will be serverless™️ 😎
 - A Twitter account (duh), private or public
 - A Dropbox account with a personal app created, alongside an access token (if you don't know how to get this, [here's a tutorial](http://99rabbits.com/get-dropbox-access-token/))
-
 
 ## Setup
 
@@ -34,11 +33,13 @@ Finally, install the dependencies of the project:
 npm i
 ```
 
-Now, while you *could* run the script right now, you'll want to run the following command. It will login once to your account and store the cookies locally so they can be re-used. This will prevent Twitter from telling you that a new device connected to your account every time the script runs!
+Now, while you _could_ run the script right now, you'll want to run the following command. It will login once to your account and store the cookies locally so they can be re-used. This will prevent Twitter from telling you that a new device connected to your account every time the script runs!
 
 ```
 npm run dump-cookies
 ```
+
+**If you're planning to run the script on a distance machine:** grab the `cookies.json` file, and place it in the repo on your server/distant machine. This will prevent Twitter from freaking out due to "suspicious" activity on your account.
 
 Okay, now you can run the script for real!
 
@@ -49,7 +50,6 @@ npm start
 If everything went well, you should now have a new folder in your `Apps` folder in your Dropbox! (Obviously you will see whatever last Nintendo Switch media is on your account).
 
 ![](media/dropbox-screenshot.png)
-
 
 Now, you probably don't want to run this script everytime you want to get your Switch media. So you'll want to setup a crontab or similar on your system, here's how it would look like for `crontab`:
 
