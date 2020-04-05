@@ -20,15 +20,12 @@ dotenv.config();
   );
   await loginOnTwitter(page);
 
-  await page.goto(`https://twitter.com/${process.env.TWITTER_USERNAME}`);
-  const profileJsonResponse = await page.waitForResponse((response) => {
   let profileJsonResponse: puppeteer.Response = undefined;
 
   page.on('response', (response) => {
     if (
       response.request().url().includes('2/timeline/profile') &&
       response.request().method() === 'GET'
-    );
     ) {
       profileJsonResponse = response;
     }
