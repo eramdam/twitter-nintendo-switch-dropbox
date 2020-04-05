@@ -48,8 +48,24 @@ export async function downloadUrl(url: string) {
   return Buffer.from(res.data);
 }
 
+export async function getLastTweetDate() {
+  try {
+    const file = fs.readFileSync('./cache.txt');
+
+    const fileContent = file.toString();
+
+    return Number(fileContent) || 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+export async function writeLastTweetDate(date: Date) {
+  return fs.writeFileSync('./cache.txt', String(date.getTime()));
+}
+
 export async function uploadFileToDropbox(
-  filePromise: Promise<Buffer>,
+  filePromise: Promise<Buffer> | Buffer,
   dropboxPath: string
 ) {
   console.log('Uploading ', dropboxPath);
