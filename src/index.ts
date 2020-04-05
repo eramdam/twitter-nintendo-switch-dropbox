@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 
 import { downloadUrl, loginOnTwitter } from './helpers';
+import { uploadFileToDropbox } from './dropbox';
 
 dotenv.config();
 
@@ -50,7 +51,7 @@ dotenv.config();
 
   const dateObject = new Date(dateString);
 
-  await Promise.all(
+  const savedFilePaths = await Promise.all(
     imagesUrls.map((imageUrl) => {
       const filename =
         url.parse(imageUrl).pathname.split('/media/')[1] +
@@ -62,6 +63,16 @@ dotenv.config();
 
       console.log('saving ', filename);
       return downloadUrl(imageUrl, filepath);
+    })
+  );
+
+  await Promise.all(
+    savedFilePaths.map((f) => {
+      const month = dateObject.toLocaleString(undefined, { month: '2-digit' });
+      const day = dateObject.toLocaleString(undefined, { day: '2-digit' });
+      const year = dateObject.toLocaleString(undefined, { year: 'numeric' });
+
+      return uploadFileToDropbox(f, `/${year}-${month}-${day}`);
     })
   );
 

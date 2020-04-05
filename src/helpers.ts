@@ -20,7 +20,6 @@ async function maybeLoadCookies() {
 export async function loginOnTwitter(page: puppeteer.Page) {
   await page.goto('https://twitter.com/login', { waitUntil: 'networkidle2' });
   const cookies = await maybeLoadCookies();
-  console.log({ cookies });
   await page.setCookie(...(Array.from(cookies || []) as any));
 
   // fill the credentials
@@ -45,10 +44,10 @@ export async function downloadUrl(url: string, path: string) {
 
   response.data.pipe(fileStream);
 
-  return new Promise((resolve, reject) => {
+  return new Promise<string>((resolve, reject) => {
     fileStream.on('finish', () => {
       console.log(`saved ${url} in ${path}`);
-      resolve();
+      resolve(path);
     });
     fileStream.on('error', reject);
   });
