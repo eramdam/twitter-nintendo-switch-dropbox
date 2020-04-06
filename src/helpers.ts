@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
 import * as dotenv from 'dotenv';
 import { Dropbox } from 'dropbox';
+import * as path from 'path';
 
 dotenv.config();
 
@@ -15,7 +16,9 @@ const client = new Dropbox({
 async function maybeLoadCookies() {
   try {
     return JSON.parse(
-      (await fs.promises.readFile('./cookies.json')).toString()
+      (
+        await fs.promises.readFile(path.resolve(__dirname, './cookies.json'))
+      ).toString()
     );
   } catch (e) {
     return [];
