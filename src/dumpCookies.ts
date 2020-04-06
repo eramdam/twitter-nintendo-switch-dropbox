@@ -8,8 +8,9 @@ import * as path from 'path';
   const page = await maybeLoginOnTwitter(await browser.newPage());
   const content = JSON.stringify(await page.cookies());
 
+  console.log(path.resolve(__dirname, '../cookies.json'));
   await fs.promises.writeFile(
-    path.resolve(__dirname, './cookies.json'),
+    path.resolve(__dirname, '../cookies.json'),
     content
   );
 

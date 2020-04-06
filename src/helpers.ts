@@ -15,9 +15,10 @@ const client = new Dropbox({
 
 async function maybeLoadCookies() {
   try {
+    console.log(path.resolve(__dirname, '../cookies.json'));
     return JSON.parse(
       (
-        await fs.promises.readFile(path.resolve(__dirname, './cookies.json'))
+        await fs.promises.readFile(path.resolve(__dirname, '../cookies.json'))
       ).toString()
     );
   } catch (e) {
