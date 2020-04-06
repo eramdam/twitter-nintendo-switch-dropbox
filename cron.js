@@ -1,12 +1,8 @@
 const cron = require('node-cron');
-const { exec } = require('child_process');
+const execa = require('execa');
 
-cron.schedule('* * * * *', () => {
-  exec(
-    'npm run start',
-    {
-      cwd: __dirname,
-    },
-    console.log
-  );
+cron.schedule('* * * * *', async () => {
+  const { stderr, stdout } = await execa('npm', ['start']);
+  console.error(stderr);
+  console.log(new Date(), stdout);
 });
