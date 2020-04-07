@@ -13,6 +13,7 @@ dotenv.config();
 
 (async () => {
   const lastTweetDate = await getLastTweetDate();
+  console.log('Last tweet date', new Date(lastTweetDate));
   const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
 
@@ -60,27 +61,31 @@ dotenv.config();
     process.exit(0);
   }
 
-  await Promise.all(
-    mediaObjects.map(({ date, url, type, tweetId }, index) => {
-      const month = date.toLocaleString(undefined, {
-        month: '2-digit',
-      });
-      const day = date.toLocaleString(undefined, {
-        day: '2-digit',
-      });
-      const year = date.toLocaleString(undefined, {
-        year: 'numeric',
-      });
+  for (const mediaObject of mediaObjects) {
+    console.log(
+      `Uploading ${mediaObjects.indexOf(mediaObject) + 1} of ${
+        mediaObjects.length
+      }`
+    );
+    const { date, url, type, tweetId, index } = mediaObject;
+    const month = date.toLocaleString(undefined, {
+      month: '2-digit',
+    });
+    const day = date.toLocaleString(undefined, {
+      day: '2-digit',
+    });
+    const year = date.toLocaleString(undefined, {
+      year: 'numeric',
+    });
 
-      const fileBuffer = downloadUrl(url);
-      const ext = type === 'photo' ? 'jpg' : 'mp4';
+    const fileBuffer = downloadUrl(url);
+    const ext = type === 'photo' ? 'jpg' : 'mp4';
 
-      return uploadFileToDropbox(
-        fileBuffer,
-        `/${year}-${month}-${day}/${tweetId}-${index + 1}.${ext}`
-      );
-    })
-  );
+    await uploadFileToDropbox(
+      fileBuffer,
+      `/${year}-${month}-${day}/${tweetId}-${index + 1}.${ext}`
+    );
+  }
 
   process.exit(0);
 })();
@@ -111,9 +116,10 @@ function extractMediaFilesFromTweetJson(tweetJson: any) {
   const date = new Date(tweetJson.created_at);
 
   if (hasPhotos) {
-    return Array.from(tweetJson.entities.media).map((entity: any) => {
+    return Array.from(tweetJson.entities.media).map((entity: any, index) => {
       return {
         date,
+        index,
         tweetId: tweetJson.id_str,
         url: entity.media_url_https + ':orig',
         type: 'photo',
@@ -129,8 +135,9 @@ function extractMediaFilesFromTweetJson(tweetJson: any) {
 
       return variants.find((v) => maxBitrate === v.bitrate);
     })
-    .map((v) => ({
+    .map((v, index) => ({
       date,
+      index,
       tweetId: tweetJson.id_str,
       url: v.url,
       type: 'video',
