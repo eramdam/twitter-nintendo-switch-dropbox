@@ -4,9 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node src/index.ts",
-    "dump-cookies": "ts-node src/dumpCookies.ts"
+    "cron": "ts-node -T src/cron.ts"
   },
   "keywords": [],
   "author": "",
@@ -14,7 +13,9 @@
   "dependencies": {
     "@types/lodash": "^4.14.149",
     "@types/node": "^13.11.0",
+    "@types/node-cron": "^2.0.3",
     "@types/puppeteer": "^2.0.1",
+    "@types/twit": "^2.2.23",
     "axios": "^0.19.2",
     "dotenv": "^8.2.0",
     "dropbox": "^4.0.30",
@@ -22,8 +23,8 @@
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.15",
     "node-cron": "^2.0.3",
-    "puppeteer": "^2.1.1",
     "ts-node": "^8.8.2",
+    "twit": "^2.2.11",
     "typescript": "^3.8.3"
   }
 }
