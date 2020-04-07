@@ -50,10 +50,12 @@ dotenv.config();
 
   await writeLastTweetDate(new Date(lastTweets[0].created_at));
 
-  console.log(`Found ${lastTweets.length} to process`);
-
   const mediaObjects = flatten(
     lastTweets.map((tweet) => extractMediaFilesFromTweetJson(tweet))
+  );
+
+  console.log(
+    `Found ${mediaObjects.length} items in ${lastTweets.length} tweets`
   );
 
   if (!mediaObjects.length) {
