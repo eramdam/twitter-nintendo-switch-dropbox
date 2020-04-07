@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/index.ts",
-    "cron": "ts-node -T src/cron.ts"
+    "start": "node src/index.js",
+    "build": "tsc",
+    "cron": "node src/cron.js"
   },
   "keywords": [],
   "author": "",
