@@ -95,15 +95,17 @@ function extractMediaFilesFromTweetJson(tweetJson: any) {
   const date = new Date(tweetJson.created_at);
 
   if (hasPhotos) {
-    return Array.from(tweetJson.entities.media).map((entity: any, index) => {
-      return {
-        date,
-        index,
-        tweetId: tweetJson.id_str,
-        url: entity.media_url_https + ':orig',
-        type: 'photo',
-      };
-    });
+    return Array.from(tweetJson.extended_entities.media).map(
+      (entity: any, index) => {
+        return {
+          date,
+          index,
+          tweetId: tweetJson.id_str,
+          url: entity.media_url_https + ':orig',
+          type: 'photo',
+        };
+      }
+    );
   }
 
   return Array.from(tweetJson.extended_entities.media)
