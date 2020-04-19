@@ -1,6 +1,6 @@
 # What's this?
 
-Like the (very verbose) repo name implies, this is a small Node script that scrapes your Twitter profile to grab Nintendo Switch media and upload a copy of it to Dropbox for later sharing/archival.
+Like the (very verbose) repo name implies, this is a small Node script that uses Twitter's API to download media uploaded using the Nintendo Switch Twitter integration and uploads them to Dropbox for archival and later sharing.
 
 # How do I use this?
 
@@ -8,7 +8,7 @@ You will need a couple of things:
 
 - A machine/server running NodeJS (the more recent the better)
   - I'll figure out how to setup this repo on [Glitch](https://glitch.com/) soon so it will be serverless™️ 😎
-- A Twitter account (duh), private or public
+- A twitter app on your account and the access tokens (see [this tutorial](botwiki.org/tutorials/how-to-create-a-twitter-app))
 - A Dropbox account with a personal app created, alongside an access token (if you don't know how to get this, [here's a tutorial](http://99rabbits.com/get-dropbox-access-token/))
 
 ## Setup
@@ -22,9 +22,11 @@ git clone https://github.com/eramdam/twitter-nintendo-switch-dropbox
 Then, create a new file called `.env` at the root of the repo and fill it as follows:
 
 ```
-TWITTER_USERNAME='your username'
-TWITTER_PASSWORD='your password'
-DROPBOX_ACCESS_TOKEN='your dropbox access token'
+DROPBOX_ACCESS_TOKEN='**REQUIRED**'
+TWITTER_CONSUMER_KEY='**REQUIRED**'
+TWITTER_CONSUMER_SECRET='**REQUIRED**'
+TWITTER_ACCESS_TOKEN_KEY='**REQUIRED**'
+TWITTER_ACCESS_TOKEN_SECRET='**REQUIRED**'
 ```
 
 Finally, install the dependencies of the project:
@@ -33,28 +35,30 @@ Finally, install the dependencies of the project:
 npm i
 ```
 
-Now, while you _could_ run the script right now, you'll want to run the following command. It will login once to your account and store the cookies locally so they can be re-used. This will prevent Twitter from telling you that a new device connected to your account every time the script runs!
+Then build the JS files
 
 ```
-npm run dump-cookies
+npm run build
 ```
 
-**If you're planning to run the script on a distance machine:** grab the `cookies.json` file, and place it in the repo on your server/distant machine. This will prevent Twitter from freaking out due to "suspicious" activity on your account.
+## Running
 
-Okay, now you can run the script for real!
+### On your own server
 
-```
-npm start
-```
+#### Using crontab
 
-If everything went well, you should now have a new folder in your `Apps` folder in your Dropbox! (Obviously you will see whatever last Nintendo Switch media is on your account).
+You should be able to configure a crontab that runs `npm start`. I would write documentation on how to get this working, but I never managed to have it working, so I ended up using the tmux/screen method below
+
+#### Using screen or tmux
+
+1. Launch a screen/tmux session
+2. Navigate to the repository
+3. Run `npm run cron`
+4. Detatch your screen/tmux session
+5. Profit!
+
+This is hacky but at least it works
+
+If everything works, you should see screenshots and videos being added to your Dropbox, like in the screenshot below
 
 ![](media/dropbox-screenshot.png)
-
-Now, you probably don't want to run this script everytime you want to get your Switch media. So you'll want to setup a crontab or similar on your system, here's how it would look like for `crontab`:
-
-```
-* * * * * /path/to/your/clone/of/the/repo/crontab.sh > ~/logs/twitter-nintendo-switch.log
-```
-
-And you're done! Hooray!
