@@ -7,6 +7,7 @@ import {
   uploadFileToDropbox,
   writeLastTweetId,
 } from './helpers';
+import { downloadTwitterVideo } from './m3u8';
 
 dotenv.config();
 
@@ -69,7 +70,7 @@ export async function grabMedia() {
         mediaObjects.length
       }`
     );
-    const { date, url, type, tweetId, index } = mediaObject;
+    const { date, type, tweetId, index } = mediaObject;
     const month = date.toLocaleString(undefined, {
       month: '2-digit',
     });
@@ -80,7 +81,14 @@ export async function grabMedia() {
       year: 'numeric',
     });
 
-    const fileBuffer = downloadUrl(url);
+    let fileBuffer: Promise<Buffer>;
+
+    if (mediaObject.type === 'video') {
+      fileBuffer = downloadTwitterVideo(mediaObject.url);
+    } else {
+      fileBuffer = downloadUrl(mediaObject.url);
+    }
+
     const ext = type === 'photo' ? 'jpg' : 'mp4';
 
     await uploadFileToDropbox(
@@ -111,16 +119,16 @@ function extractMediaFilesFromTweetJson(tweetJson: any) {
   return Array.from(tweetJson.extended_entities.media)
     .map((entity: any) => {
       const variants: any[] = Array.from(entity.video_info.variants);
-      const bitRates = variants.map((variant) => Number(variant.bitrate || 0));
-      const maxBitrate = Math.max(...bitRates);
 
-      return variants.find((v) => maxBitrate === v.bitrate);
+      return variants.find((v) => String(v.content_type).includes('x-mpegURL'));
     })
-    .map((v, index) => ({
-      date,
-      index,
-      tweetId: tweetJson.id_str,
-      url: v.url,
-      type: 'video',
-    }));
+    .map((v, index) => {
+      return {
+        date,
+        index,
+        tweetId: tweetJson.id_str,
+        url: v.url,
+        type: 'video',
+      };
+    });
 }

@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as dotenv from 'dotenv';
 import { Dropbox } from 'dropbox';
 import * as fs from 'fs';
+import { Stream, Duplex } from 'stream';
 
 dotenv.config();
 
@@ -9,6 +10,22 @@ const client = new Dropbox({
   accessToken: process.env.DROPBOX_ACCESS_TOKEN,
   fetch: require('isomorphic-fetch'),
 });
+
+export function streamToBuffer(stream: Stream) {
+  return new Promise<Buffer>((resolve, reject) => {
+    let buffers = [];
+    stream.on('error', reject);
+    stream.on('data', (data) => buffers.push(data));
+    stream.on('end', () => resolve(Buffer.concat(buffers)));
+  });
+}
+
+export function bufferToStream(buffer: Buffer) {
+  const stream = new Duplex();
+  stream.push(buffer);
+  stream.push(null);
+  return stream;
+}
 
 /** Downloads a given URL and returns its content as a Buffer. */
 export async function downloadUrl(url: string) {
