@@ -27,6 +27,7 @@ TWITTER_CONSUMER_KEY='**REQUIRED**'
 TWITTER_CONSUMER_SECRET='**REQUIRED**'
 TWITTER_ACCESS_TOKEN_KEY='**REQUIRED**'
 TWITTER_ACCESS_TOKEN_SECRET='**REQUIRED**'
+SCRIPT_ENDPOINT='a-random-suite-of-words'
 ```
 
 Finally, install the dependencies of the project:
@@ -45,20 +46,17 @@ npm run build
 
 ### On your own server
 
-#### Using crontab
+Find a way to run the main npm script in the background.
+I personally use a tmux session that runs `npm start` but you can use something like [forever](https://npm.im/forever) or [pm2](https://npm.im/pm2).
 
-You should be able to configure a crontab that runs `npm start`. I would write documentation on how to get this working, but I never managed to have it working, so I ended up using the tmux/screen method below
+Then, you basically want to call your web server on a regular basis (every minute works great and will keep you below Twitter's API's rate limit), this is trivial using cron
 
-#### Using screen or tmux
+```
+* * * * * curl http://localhost:3000/a-random-suite-of-words
+```
 
-1. Launch a screen/tmux session
-2. Navigate to the repository
-3. Run `npm run cron`
-4. Detatch your screen/tmux session
-5. Profit!
+### On Glitch.com
 
-This is hacky but at least it works
-
-If everything works, you should see screenshots and videos being added to your Dropbox, like in the screenshot below
+TODO
 
 ![](media/dropbox-screenshot.png)
