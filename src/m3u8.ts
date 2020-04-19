@@ -54,7 +54,10 @@ async function encodeMp4File(inputFile: Duplex) {
   return new Promise<Buffer>((resolve, reject) => {
     // Output as mp4 file.
     ffmpeg(inputFile)
+      // make sure aac is enabled.
+      .outputOptions('-strict -2')
       .output('/tmp/final.mp4')
+      .on('progress', console.log)
       .on('error', reject)
       .on('end', () => {
         const fileBuffer = fs.readFileSync('/tmp/final.mp4');
