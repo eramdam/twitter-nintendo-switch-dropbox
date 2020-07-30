@@ -72,14 +72,21 @@ async function downloadAndParseM3u8(url: string) {
   return await parseM3u8File(await downloadUrl(url));
 }
 
-export async function downloadTwitterVideo(m3u8Url: string) {
+export async function downloadTwitterVideo(
+  m3u8Url: string
+): Promise<Buffer | undefined> {
   console.log('Downloading ', m3u8Url);
   // Grab the entry m3u8 file
   const parsedEntrypointFile = await downloadAndParseM3u8(m3u8Url);
   // Find the best quality
   const bestStream = _(parsedEntrypointFile.items.StreamItem)
+    .filter((stream) => stream.attributes.attributes.resolution[0] >= 1280)
     .sort((stream) => -stream.attributes.attributes.bandwidth)
     .first();
+
+  if (!bestStream) {
+    return undefined;
+  }
 
   // Parse the playlist with the best quality
   const { uri } = bestStream.properties;

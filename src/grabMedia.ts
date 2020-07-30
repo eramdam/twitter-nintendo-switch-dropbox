@@ -60,8 +60,6 @@ export async function grabMedia() {
     return;
   }
 
-  await writeLastTweetId(tweets[0].id_str);
-
   console.log(`Found ${mediaObjects.length} items in ${tweets.length} tweets`);
 
   for (const mediaObject of mediaObjects) {
@@ -81,12 +79,17 @@ export async function grabMedia() {
       year: 'numeric',
     });
 
-    let fileBuffer: Promise<Buffer>;
+    let fileBuffer: Buffer | undefined;
 
     if (mediaObject.type === 'video') {
-      fileBuffer = downloadTwitterVideo(mediaObject.url);
+      fileBuffer = await downloadTwitterVideo(mediaObject.url);
     } else {
-      fileBuffer = downloadUrl(mediaObject.url);
+      fileBuffer = await downloadUrl(mediaObject.url);
+    }
+
+    if (!fileBuffer) {
+      console.log('No suitable media found, stopping here.');
+      return;
     }
 
     const ext = type === 'photo' ? 'jpg' : 'mp4';
@@ -95,6 +98,7 @@ export async function grabMedia() {
       fileBuffer,
       `/${year}-${month}-${day}/${tweetId}-${index + 1}.${ext}`
     );
+    await writeLastTweetId(tweets[0].id_str);
   }
 }
 
