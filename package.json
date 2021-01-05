@@ -20,7 +20,7 @@
     "@types/node-cron": "^2.0.3",
     "@types/puppeteer": "^2.0.1",
     "@types/twit": "^2.2.23",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "dotenv": "^8.2.0",
     "dropbox": "^4.0.30",
     "execa": "^4.0.0",
